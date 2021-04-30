@@ -7,7 +7,7 @@
     "test": "test"
   },
   "scripts": {
-    "test": "karma start --single-run"
+    "test": "karma start karma.config.js"
   },
   "author": "",
   "license": "ISC",
