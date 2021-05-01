@@ -8,6 +8,7 @@
         "module": "commonjs",
         "moduleResolution": "node",
         "jsx": "react",
-        "jsxFactory": "h"
+        "jsxFactory": "h",
+        "strictNullChecks": true
     }
 }
