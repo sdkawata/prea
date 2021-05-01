@@ -15,6 +15,14 @@ function renderDiffElementNodes(
             )
         }
     }
+    // TODO diffProps
+    const newChildren = newVNode.props.children
+    renderDiffChildren(
+        dom,
+        Array.isArray(newChildren) ? newChildren : [newChildren],
+        newVNode,
+        oldVNode,
+    )
     return dom
 }
 

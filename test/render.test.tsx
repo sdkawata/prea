@@ -1,4 +1,5 @@
 import {render} from '../src/render'
+import {h, VNode} from "../src/create-element"
 
 describe('render()', () => {
     let rootDOM: HTMLDivElement | null;
@@ -18,5 +19,10 @@ describe('render()', () => {
         expect(c?.length).toEqual(1)
         expect((c?.[0] as Text).data).toEqual('hoge')
         expect(c?.[0].nodeName).toEqual('#text')
+	});
+
+    it('should allow node type change with content', () => {
+		render(<div>Good</div>, rootDOM!);
+		expect(rootDOM?.innerHTML).toEqual(`<div>Good</div>`);
 	});
 })
