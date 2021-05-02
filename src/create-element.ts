@@ -20,7 +20,7 @@ export interface FC<P = {}> {
 export interface Component<P = {}> {
     render(props:P): ComponentChildren
 }
-export type ComponentChild = VNode | string | number
+export type ComponentChild = VNode | string | number | boolean | null | undefined
 export type ComponentChildren = ComponentChild[] | ComponentChild | null
 
 type NormalizedProps<P> = P & {children: ComponentChildren}

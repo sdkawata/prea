@@ -98,4 +98,56 @@ describe('render()', () => {
 			`<div><hr><div class="reuse">Hello World!</div></div>`
 		);
 	});
+
+    it('should merge new elements when called multiple times', () => {
+		render(<div />,rootDOM!);
+		expect(rootDOM!.childNodes.length).toEqual(1);
+		expect(rootDOM!.firstChild?.nodeName).toEqual('DIV');
+		expect(rootDOM!.innerHTML).toEqual('<div></div>');
+
+		render(<span />,rootDOM!);
+		expect(rootDOM!.childNodes.length).toEqual(1);
+		expect(rootDOM!.firstChild?.nodeName).toEqual('SPAN');
+		expect(rootDOM!.innerHTML).toEqual('<span></span>');
+
+		render(<span class="hello">Hello!</span>,rootDOM!);
+		expect(rootDOM!.childNodes.length).toEqual(1);
+		expect(rootDOM!.firstChild?.nodeName).toEqual('SPAN');
+		expect(rootDOM!.innerHTML).toEqual('<span class="hello">Hello!</span>');
+	});
+
+    it('should not render falsy values', () => {
+		render(
+			<div>
+				{null},{undefined},{false},{0},{NaN}
+			</div>,
+			rootDOM!
+		);
+
+		expect((rootDOM!.firstChild as Element).innerHTML).toEqual(',,,0,NaN');
+	});
+
+	it('should not render null', () => {
+		render(null, rootDOM!);
+		expect(rootDOM!.innerHTML).toEqual('');
+		expect(rootDOM!.childNodes?.length).toEqual(0);
+	});
+
+	it('should not render undefined', () => {
+		render(undefined, rootDOM!);
+		expect(rootDOM!.innerHTML).toEqual('');
+		expect(rootDOM!.childNodes?.length).toEqual(0);
+	});
+
+	it('should not render boolean true', () => {
+		render(true, rootDOM!);
+		expect(rootDOM!.innerHTML).toEqual('');
+		expect(rootDOM!.childNodes?.length).toEqual(0);
+	});
+
+	it('should not render boolean false', () => {
+		render(false, rootDOM!);
+		expect(rootDOM!.innerHTML).toEqual('');
+		expect(rootDOM!.childNodes?.length).toEqual(0);
+	});
 })

@@ -151,7 +151,7 @@ function renderDiffChildren(
     for(let i=0; i < renderResults.length; i++) {
         const renderResult = renderResults[i]
         let childVNode: VNode | null
-        if (renderResult === undefined || renderResult === null) {
+        if (renderResult === undefined || renderResult === null || typeof renderResult === 'boolean') {
             childVNode = null
         } else if (typeof renderResult === 'string' ||
             typeof renderResult === 'number') {
@@ -210,13 +210,14 @@ function renderDiffChildren(
     newParentVNode._dom = firstChildDom
     // 新たに作成されたdomを並び替える
     const childrenLength = newParentVNode._children.length
-    let lastVNode: VNode<any> | null = null
+    let lastDom: PreaNode | null = null
     for (let i=childrenLength - 1; i>=0; i--) {
         const currentVNode = newParentVNode._children[i]
-        if (currentVNode?._dom) {
-            parentDom.insertBefore(currentVNode?._dom, lastVNode?._dom || null)
+        if (! currentVNode?._dom) {
+            continue
         }
-        lastVNode = currentVNode
+        parentDom.insertBefore(currentVNode?._dom, lastDom || null)
+        lastDom = currentVNode?._dom
     }
     
     // 不要なoldChildrenをunmountする
