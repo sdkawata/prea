@@ -139,6 +139,32 @@ function renderDiffElementNodes(
     return dom
 }
 
+function reorderChild(
+    parentDom: PreaNode,
+    childrenVNode: (VNode | null)[],
+    lastDom: Node | null,
+): Node | null {
+
+    const childrenLength = childrenVNode.length
+    for (let i=childrenLength - 1; i>=0; i--) {
+        const currentVNode = childrenVNode[i]
+        if (typeof currentVNode?.type === 'function') {
+            // currentVNodeがfragmentかfragmentを返すcomponentの可能性があるので、
+            // まずcurrentVNodeの中身を並び替える
+            const children = currentVNode._children
+            if (children) {
+                lastDom = reorderChild(parentDom, children, lastDom)
+            }
+        }
+        if (! currentVNode?._dom) {
+            continue
+        }
+        parentDom.insertBefore(currentVNode?._dom, lastDom || null)
+        lastDom = currentVNode?._dom
+    }
+    return lastDom
+}
+
 function renderDiffChildren(
     parentDom: Node,
 	renderResults: ComponentChild[], // parentDomに追加するべきcomponentChild
@@ -220,16 +246,11 @@ function renderDiffChildren(
     }
     newParentVNode._dom = firstChildDom
     // 新たに作成されたdomを並び替える
-    const childrenLength = newParentVNode._children.length
-    let lastDom: PreaNode | null = null
-    for (let i=childrenLength - 1; i>=0; i--) {
-        const currentVNode = newParentVNode._children[i]
-        if (! currentVNode?._dom) {
-            continue
-        }
-        parentDom.insertBefore(currentVNode?._dom, lastDom || null)
-        lastDom = currentVNode?._dom
-    }
+    reorderChild(
+        parentDom,
+        newParentVNode._children,
+        null
+    )
     
     // 不要なoldChildrenをunmountする
     for (let i=0;i<oldChildren.length; i++) {
