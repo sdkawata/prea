@@ -40,4 +40,18 @@ describe('render()', () => {
         expect(rootDOM?.childNodes.length).toEqual(1)
         expect(rootDOM?.childNodes[0].nodeName).toEqual('SPAN')
     })
+
+    it('should support custom tag names', () => {
+		render(<foo />, rootDOM!);
+		expect(rootDOM!.childNodes.length).toEqual(1);
+		expect(rootDOM!.firstChild!.nodeName).toEqual('FOO');
+
+		rootDOM!.parentNode?.removeChild(rootDOM!);
+		rootDOM! = document.createElement('div');
+		document.body.appendChild(rootDOM!);
+
+		render(<x-bar />, rootDOM!);
+		expect(rootDOM!.childNodes.length).toEqual(1);
+		expect(rootDOM!.firstChild!.nodeName).toEqual('X-BAR');
+	});
 })
