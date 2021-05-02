@@ -54,4 +54,22 @@ describe('render()', () => {
 		expect(rootDOM!.childNodes.length).toEqual(1);
 		expect(rootDOM!.firstChild!.nodeName).toEqual('X-BAR');
 	});
+
+    it('should support the form attribute', () => {
+		render(
+			<div>
+				<form id="myform" />
+				<button form="myform">test</button>
+				<input form="myform" />
+			</div>,
+			rootDOM!
+		);
+		const div = rootDOM!.childNodes[0];
+		const form = div.childNodes[0] as HTMLFormElement;
+		const button = div.childNodes[1] as HTMLButtonElement;
+		const input = div.childNodes[2]  as HTMLInputElement;
+
+		expect(button.form).toEqual(form);
+		expect(input.form).toEqual(form);
+	});
 })

@@ -9,11 +9,104 @@ import {
 } from './create-element'
 import {PreaNode} from './internal-type'
 
+function setStyle(
+    style: CSSStyleDeclaration,
+    key: string,
+    value: any
+) {
+    const IS_NON_DIMENSIONAL = /acit|ex(?:s|g|n|p|$)|rph|grid|ows|mnc|ntw|ine[ch]|zoo|^ord|itera/i;
+    if (key[0] === '-') {
+        // ???
+        style.setProperty(key, value)
+    } else if (value === null) {
+        style[key] = ''
+    } else if (typeof value !== 'number' || IS_NON_DIMENSIONAL.test(key)) {
+        style[key] = value;
+	} else {
+		style[key] = value + 'px';
+    }
+}
+
+function setProperty(
+    dom: PreaNode,
+    name: string,
+    value: any,
+    oldValue: any
+) {
+    const style = (dom as HTMLElement).style
+    if (name === 'style') {
+        if (typeof value === 'string') {
+            style.cssText = value
+        } else {
+            if (typeof oldValue === 'string') {
+                style.cssText = oldValue = ''
+            }
+            if (oldValue) {
+                for (name in oldValue) {
+                    if (! (value && name in value)) {
+                        setStyle(style, name, '')
+                    }
+                }
+            }
+            if (value) {
+                for (name in value) {
+                    if (!oldValue || value[name] !== oldValue[name]) {
+                        setStyle(style, name, value[name])
+                    }
+                }
+            }
+        }
+    } else if (name[0] === 'o' || name[1] === 'n') {
+        // この比較方法が早いらしい　https://esbench.com/bench/574c954bdb965b9a00965ac6
+        // TODO
+    } else if (
+        name !== 'list' &&
+        name !== 'tagName' &&
+        name !== 'form' &&
+        name !== 'type' &&
+        name !== 'size' &&
+        name !== 'download' &&
+        name !== 'href' &&
+        name !== 'contentEditable' &&
+        name in dom
+    ) {
+        dom[name] = value == null ? '' : value;
+    } else {
+        if (value == null || value === false) {
+            (dom as HTMLElement).removeAttribute(name)
+        } else {
+            (dom as Element).setAttribute(name, value);
+        }
+    }
+}
+
+// domにpropをsetする
+function renderDiffProps(
+    dom: PreaNode,
+    newProps: object,
+    oldProps: object
+) {
+    for (const i in oldProps) {
+        if (i !== 'children' && i !== 'key' && !(i in newProps)) {
+            setProperty(dom, i, null, oldProps)
+        }
+    }
+    for (const i in newProps) {
+        if (i !== 'children' &&
+            i !== 'key' &&
+            i != 'value' &&
+            i != 'checked' &&
+            oldProps?.[i] !== newProps[i]) {
+            setProperty(dom, i, newProps[i], oldProps?.[i])
+        }
+    } 
+}
+
 // newVNodeに対応するdomを作成or更新する
 // 作成or更新したdomを返す
 // domへの追加はしない
 function renderDiffElementNodes(
-    dom: Node | null,
+    dom: PreaNode | null,
     newVNode: VNode<any>,
     oldVNode: VNode<any> | null,
     excessDomChildren: PreaNode[] | null
@@ -36,6 +129,11 @@ function renderDiffElementNodes(
         newVNode,
         oldVNode,
         excessDomChildren,
+    )
+    renderDiffProps(
+        dom,
+        newVNode.props,
+        oldVNode?.props,
     )
     return dom
 }
