@@ -57,7 +57,7 @@ function setProperty(
                 }
             }
         }
-    } else if (name[0] === 'o' || name[1] === 'n') {
+    } else if (name[0] === 'o' && name[1] === 'n') {
         // この比較方法が早いらしい　https://esbench.com/bench/574c954bdb965b9a00965ac6
         // TODO
     } else if (
@@ -72,7 +72,7 @@ function setProperty(
         name in dom
     ) {
         dom[name] = value == null ? '' : value;
-    } else {
+    } else if (typeof value != 'function') {
         if (value == null || value === false) {
             (dom as HTMLElement).removeAttribute(name)
         } else {
@@ -100,7 +100,18 @@ function renderDiffProps(
             oldProps?.[i] !== newProps[i]) {
             setProperty(dom, i, newProps[i], oldProps?.[i])
         }
-    } 
+    }
+    // valueとcheckedはcontroll componentの都合？で差分によらず常にsetするので別に書く
+    if ('value' in newProps &&
+        newProps['value'] !== undefined &&
+        newProps['value'] !== (dom as HTMLInputElement).value) {
+        setProperty(dom, 'value', newProps['value'], false)
+    }
+    if ('checked' in newProps &&
+        newProps['checked'] !== undefined &&
+        newProps['checked'] !== (dom as HTMLInputElement).checked) {
+        setProperty(dom, 'checked', newProps['checked'], false)
+    }
 }
 
 // newVNodeに対応するdomを作成or更新する

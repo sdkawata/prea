@@ -1,6 +1,14 @@
 import {render} from '../src/render'
 import {h, VNode} from "../src/create-element"
 
+function getAttributes(node: Element) {
+	let attrs = {};
+	for (let i = node.attributes.length; i--; ) {
+		attrs[node.attributes[i].name] = node.attributes[i].value;
+	}
+	return attrs;
+}
+
 describe('render()', () => {
     let rootDOM: HTMLDivElement | null;
     beforeEach(() => {
@@ -180,5 +188,127 @@ describe('render()', () => {
         const Foo = () => 'd';
 		render([0, 'a', 'b', <span>c</span>, <Foo />, null, undefined, false, ['e', 'f'], 1], rootDOM!);
 		expect(rootDOM!.innerHTML).toEqual('0ab<span>c</span>def1');
+	});
+
+	it('should clear falsy attributes', () => {
+		render(
+			<div
+				anull="anull"
+				aundefined="aundefined"
+				afalse="afalse"
+				anan="aNaN"
+				a0="a0"
+			/>,
+			rootDOM!
+		);
+
+		render(
+			<div
+				anull={null}
+				aundefined={undefined}
+				afalse={false}
+				anan={NaN}
+				a0={0}
+			/>,
+			rootDOM!
+		);
+
+		expect(
+			getAttributes(rootDOM!.firstChild as Element)
+		).toEqual({
+			a0: '0',
+			anan: 'NaN'
+		});
+	});
+
+	
+	it('should not render falsy attributes on hydrate', () => {
+		render(
+			<div
+				anull={null}
+				aundefined={undefined}
+				afalse={false}
+				anan={NaN}
+				a0={0}
+			/>,
+			rootDOM!
+		);
+
+		expect(getAttributes(((rootDOM! as Element).firstChild!) as Element)).toEqual({
+			a0: '0',
+			anan: 'NaN'
+		});
+	});
+
+	it('should value set', () => {
+		render(
+			<div>
+				<input value={42} />
+			</div>,
+			rootDOM!
+		);
+
+		let root = rootDOM!.firstChild! as Element;
+		expect((root.children[0] as HTMLInputElement).value).toEqual('42');
+	});
+
+	it('should clear falsy input values', () => {
+		// Note: this test just demonstrates the default browser behavior
+		render(
+			<div>
+				<input value={0} />
+				<input value={false} />
+				<input value={null} />
+				<input value={undefined} />
+			</div>,
+			rootDOM!
+		);
+
+		let root = rootDOM!.firstChild! as Element;
+		expect((root.children[0] as HTMLInputElement).value).toEqual('0');
+		expect((root.children[1] as HTMLInputElement).value).toEqual('false');
+		expect((root.children[2] as HTMLInputElement).value).toEqual('');
+		expect((root.children[3] as HTMLInputElement).value).toEqual('');
+	});
+
+	it('should set value inside the specified range', () => {
+		render(
+			<input type="range" value={0.5} min="0" max="1" step="0.05" />,
+			rootDOM!
+		);
+		expect((rootDOM!.firstChild as HTMLInputElement).value).toEqual('0.5');
+	});
+
+	it('should not clear falsy DOM properties', () => {
+		function test(val) {
+			render(
+				<div>
+					<input value={val} />
+					<table border={val} />
+				</div>,
+				rootDOM!
+			);
+		}
+
+		test('2');
+		test(false);
+		expect(rootDOM!.innerHTML).toEqual(
+			'<div><input><table border="false"></table></div>',
+			'for false'
+		);
+
+		test('3');
+		test(null);
+		expect(rootDOM!.innerHTML).toEqual(
+			'<div><input><table border=""></table></div>',
+			'for null'
+		);
+
+		test('4');
+		test(undefined);
+		expect(rootDOM!.innerHTML).toEqual(
+			'<div><input><table border=""></table></div>',
+			'for undefined'
+		);
 	});
 })
