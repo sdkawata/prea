@@ -22,6 +22,7 @@ describe('render()', () => {
 	});
 
     it('should allow node type change with content', () => {
+		render(<span>Bad</span>, rootDOM!);
 		render(<div>Good</div>, rootDOM!);
 		expect(rootDOM?.innerHTML).toEqual(`<div>Good</div>`);
 	});

@@ -4,8 +4,11 @@ type VNodeType<P={}> = string | FC<P> | null
 export interface VNode<P={}>  {
     type: VNodeType<P>,
     props: P,
+    key: any,
     _component?: Component<P>,
     _children: VNode<any>[] | null,
+    //このVNodeが返した最初のComponentChildに対応するDOM
+    // Fragmentの仕様上一つのVNodeが複数のDOMに対応しうることに注意
     _dom: Node | null,
 }
 
@@ -21,8 +24,12 @@ export type ComponentChildren = ComponentChild[] | ComponentChild | null
 type NormalizedProps<P> = P & {children: ComponentChildren}
 export function jsxFactory<P = {}>(type:VNodeType<NormalizedProps<P>>, props: P, ...children: ComponentChild[]): VNode<NormalizedProps<P>> {
     const normalizedProps: any = {}
-    for (const key in props) {
-        normalizedProps[key] = props[key]
+    let key = null
+    for (const propsKey in props) {
+        if (propsKey === 'key') {
+            key = props['key']
+        }
+        normalizedProps[propsKey] = props[propsKey]
     }
     if (children.length > 0) {
         normalizedProps.children = children
@@ -30,14 +37,16 @@ export function jsxFactory<P = {}>(type:VNodeType<NormalizedProps<P>>, props: P,
     return createVNode(
         type,
         normalizedProps,
+        key,
     )
 }
 export const h = jsxFactory
 
-export function createVNode<P = {}>(type: VNodeType, props: P): VNode<P> {
+export function createVNode<P = {}>(type: VNodeType, props: P, key:any): VNode<P> {
     return ({
         type,
         props,
+        key,
         _children: null,
         _dom: null,
     })
