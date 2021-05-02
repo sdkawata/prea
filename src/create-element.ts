@@ -10,6 +10,8 @@ export interface VNode<P={}>  {
     //このVNodeが返した最初のComponentChildに対応するDOM
     // Fragmentの仕様上一つのVNodeが複数のDOMに対応しうることに注意
     _dom: Node | null,
+    // rootDOMからの深さ
+    _depth: number,
 }
 
 export interface FC<P = {}> {
@@ -49,6 +51,7 @@ export function createVNode<P = {}>(type: VNodeType, props: P, key:any): VNode<P
         key,
         _children: null,
         _dom: null,
+        _depth: 0,
     })
 }
 

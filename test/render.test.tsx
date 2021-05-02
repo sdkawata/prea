@@ -72,4 +72,30 @@ describe('render()', () => {
 		expect(button.form).toEqual(form);
 		expect(input.form).toEqual(form);
 	});
+
+	it('should allow VNode reuse', () => {
+		let reused = <div class="reuse">Hello World!</div>;
+		render(
+			<div>
+				{reused}
+				<hr />
+				{reused}
+			</div>,
+			rootDOM!
+		);
+		expect(rootDOM!.innerHTML).toEqual(
+			`<div><div class="reuse">Hello World!</div><hr><div class="reuse">Hello World!</div></div>`
+		);
+
+		render(
+			<div>
+				<hr />
+				{reused}
+			</div>,
+			rootDOM!
+		);
+		expect(rootDOM!.innerHTML).toEqual(
+			`<div><hr><div class="reuse">Hello World!</div></div>`
+		);
+	});
 })

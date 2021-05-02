@@ -160,6 +160,13 @@ function renderDiffChildren(
                 renderResult,
                 null,
             )
+        } else if (renderResult._depth > 0) {
+            // childVNodeはすでに使用されているので、複製する
+            childVNode = createVNode(
+                renderResult.type,
+                renderResult.props,
+                renderResult.key,
+            )
         } else {
             childVNode = renderResult
         }
@@ -167,6 +174,7 @@ function renderDiffChildren(
         if (childVNode === null) {
             continue;
         }
+        childVNode._depth = newParentVNode._depth + 1
         // oldParentVNodeの中でtypeとkeyの一致するoldVNodeを探して更新元とする
         let oldVNode: VNode<any>| null = null
         if (! oldChildren[i]) {
