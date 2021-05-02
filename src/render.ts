@@ -53,7 +53,9 @@ function renderDiffChildren(
     for(let i=0; i < renderResults.length; i++) {
         const renderResult = renderResults[i]
         let childVNode: VNode | null
-        if (typeof renderResult === 'string' ||
+        if (renderResult === undefined || renderResult === null) {
+            childVNode = null
+        } else if (typeof renderResult === 'string' ||
             typeof renderResult === 'number') {
             childVNode = createVNode(
                 null,
@@ -81,7 +83,6 @@ function renderDiffChildren(
                 vnode && childVNode?.key == vnode.key && childVNode?.type === vnode.type
             ))
             if (targetIndex !== -1) {
-                console.log('h')
                 oldVNode = oldChildren[targetIndex] || null
                 oldChildren[targetIndex] = null
             }
@@ -157,7 +158,6 @@ function renderDiff(
 const render = (vnode:ComponentChildren , parentDom: PreaNode) => {
     // TODO replaceDOM??
     const oldVNode = parentDom._children
-    console.log('oldVNode', oldVNode)
     const newVNode = parentDom._children = createFragment(vnode) 
     renderDiff(
         parentDom,
@@ -170,7 +170,7 @@ const render = (vnode:ComponentChildren , parentDom: PreaNode) => {
 function unmount(vnode:VNode<any>) {
     if (vnode._children !== null) {
         for (const childVNode of vnode._children) {
-            unmount(childVNode)
+            if (childVNode) {unmount(childVNode)}
         }
     }
     const dom = vnode._dom

@@ -6,7 +6,7 @@ export interface VNode<P={}>  {
     props: P,
     key: any,
     _component?: Component<P>,
-    _children: VNode<any>[] | null,
+    _children: (VNode<any> | null)[] | null,
     //このVNodeが返した最初のComponentChildに対応するDOM
     // Fragmentの仕様上一つのVNodeが複数のDOMに対応しうることに注意
     _dom: Node | null,

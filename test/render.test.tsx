@@ -26,4 +26,18 @@ describe('render()', () => {
 		render(<div>Good</div>, rootDOM!);
 		expect(rootDOM?.innerHTML).toEqual(`<div>Good</div>`);
 	});
+
+    it('shoud create empty nodes', () => {
+        render(<div/>, rootDOM!)
+        expect(rootDOM?.childNodes.length).toEqual(1)
+        expect(rootDOM?.childNodes[0].nodeName).toEqual('DIV')
+
+        rootDOM?.parentNode?.removeChild(rootDOM)
+        rootDOM = document.createElement('div')
+        document.body.appendChild(rootDOM)
+
+        render(<span/>, rootDOM!)
+        expect(rootDOM?.childNodes.length).toEqual(1)
+        expect(rootDOM?.childNodes[0].nodeName).toEqual('SPAN')
+    })
 })
