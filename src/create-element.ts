@@ -1,7 +1,9 @@
 
 
 type VNodeType<P={}> = string | FC<P> | null
+const vNodeSymbol = Symbol('prea_vnode')
 export interface VNode<P={}>  {
+    symbol: typeof vNodeSymbol,
     type: VNodeType<P>,
     props: P,
     key: any,
@@ -46,6 +48,7 @@ export const h = jsxFactory
 
 export function createVNode<P = {}>(type: VNodeType, props: P, key:any): VNode<P> {
     return ({
+        symbol: vNodeSymbol,
         type,
         props,
         key,
@@ -64,4 +67,8 @@ export function createComponent<P>(f: FC<P>):Component<P> {
     return {
         render(props){ return f(props)}
     }
+}
+
+export function isVNode(val: any) {
+    return val?.symbol === vNodeSymbol
 }

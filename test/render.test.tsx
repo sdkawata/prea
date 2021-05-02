@@ -150,4 +150,35 @@ describe('render()', () => {
 		expect(rootDOM!.innerHTML).toEqual('');
 		expect(rootDOM!.childNodes?.length).toEqual(0);
 	});
+
+    it('should not render children when using function children', () => {
+		render(<div>{() => {}}</div>, rootDOM!);
+		expect(rootDOM!.innerHTML).toEqual('<div></div>');
+	});
+
+	it('should render NaN as text content', () => {
+		render(NaN, rootDOM!);
+		expect(rootDOM!.innerHTML).toEqual('NaN');
+	});
+
+	it('should render numbers (0) as text content', () => {
+		render(0, rootDOM!);
+		expect(rootDOM!.innerHTML).toEqual('0');
+	});
+
+	it('should render numbers (42) as text content', () => {
+		render(42, rootDOM!);
+		expect(rootDOM!.innerHTML).toEqual('42');
+	});
+
+	it('should render strings as text content', () => {
+		render('Testing, huh! How is it going?', rootDOM!);
+		expect(rootDOM!.innerHTML).toEqual('Testing, huh! How is it going?');
+	});
+
+	it('should render arrays of mixed elements', () => {
+        const Foo = () => 'd';
+		render([0, 'a', 'b', <span>c</span>, <Foo />, null, undefined, false, ['e', 'f'], 1], rootDOM!);
+		expect(rootDOM!.innerHTML).toEqual('0ab<span>c</span>def1');
+	});
 })

@@ -5,7 +5,8 @@ import {
     createFragment,
     createComponent,
     Component,
-    createVNode
+    createVNode,
+    isVNode
 } from './create-element'
 import {PreaNode} from './internal-type'
 
@@ -160,6 +161,10 @@ function renderDiffChildren(
                 renderResult,
                 null,
             )
+        } else if (Array.isArray(renderResult)) {
+            childVNode = createFragment(
+                renderResult
+            )
         } else if (renderResult._depth > 0) {
             // childVNodeはすでに使用されているので、複製する
             childVNode = createVNode(
@@ -167,8 +172,14 @@ function renderDiffChildren(
                 renderResult.props,
                 renderResult.key,
             )
-        } else {
+        } else if (isVNode(renderResult)) {
             childVNode = renderResult
+        } else {
+            childVNode = createVNode(
+                null,
+                '',
+                null,
+            )
         }
         newParentVNode._children[i] = childVNode
         if (childVNode === null) {
