@@ -40,6 +40,10 @@ function setStyle(
     }
 }
 
+function eventProxy(e) {
+    this._listeners[e.type]?.(e)
+}
+
 function setProperty(
     dom: PreaNode,
     name: string,
@@ -71,7 +75,14 @@ function setProperty(
         }
     } else if (name[0] === 'o' && name[1] === 'n') {
         // この比較方法が早いらしい　https://esbench.com/bench/574c954bdb965b9a00965ac6
-        // TODO
+        const nameLower = name.toLowerCase()
+        const eventName = (nameLower in dom ? nameLower : name).slice(2);
+        (dom._listeners = dom._listeners || {})[eventName] = value
+        if (value) {
+            dom.addEventListener(eventName, eventProxy)
+        } else {
+            dom.removeEventListener(eventName, eventProxy);
+        }
     } else if (
         name !== 'list' &&
         name !== 'tagName' &&
