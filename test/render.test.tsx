@@ -1,5 +1,6 @@
 import {render} from '../src/render'
 import {h, VNode} from "../src/create-element"
+import {useState} from "../src/hooks"
 
 function getAttributes(node: Element) {
 	let attrs = {};

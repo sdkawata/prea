@@ -63,9 +63,10 @@ export function createVNode<P = {}>(type: VNodeType, props: P, key:any): VNode<P
     })
 }
 
+const Fragment = (props) => props.children
 export function createFragment(children: ComponentChildren):VNode<{children: ComponentChildren}> {
     const arrayedChildren = Array.isArray(children) ? children : children !== null ? [children] : []
-    return jsxFactory<{}>((props) => props.children, {}, ...arrayedChildren)
+    return jsxFactory<{}>(Fragment, {}, ...arrayedChildren)
 }
 
 export function createComponent<P>(f: FC<P>, vnode:VNode<P>):Component<P> {

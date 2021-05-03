@@ -176,7 +176,7 @@ function renderDiffElementNodes(
     return dom
 }
 
-function reorderChild(
+function placeChildren(
     parentDom: PreaNode,
     childrenVNode: (VNode | null)[],
     lastDom: Node | null,
@@ -190,13 +190,17 @@ function reorderChild(
             // まずcurrentVNodeの中身を並び替える
             const children = currentVNode._children
             if (children) {
-                lastDom = reorderChild(parentDom, children, lastDom)
+                lastDom = placeChildren(parentDom, children, lastDom)
             }
         }
         if (! currentVNode?._dom) {
             continue
         }
-        parentDom.insertBefore(currentVNode?._dom, lastDom || null)
+        if (lastDom === null && currentVNode?._dom.parentElement !== parentDom) {
+            parentDom.insertBefore(currentVNode?._dom, null)
+        } else if (currentVNode?._dom?.nextSibling !== lastDom) {
+            parentDom.insertBefore(currentVNode?._dom, lastDom || null)
+        }
         lastDom = currentVNode?._dom
     }
     return lastDom
@@ -278,12 +282,11 @@ function renderDiffChildren(
             if (firstChildDom === null) {
                 firstChildDom = newDom
             }
-            parentDom.appendChild(newDom)
         }
     }
     newParentVNode._dom = firstChildDom
-    // 新たに作成されたdomを並び替える
-    reorderChild(
+    // 新たに追加されたdomを設置or並び替え
+    placeChildren(
         parentDom,
         newParentVNode._children,
         null
