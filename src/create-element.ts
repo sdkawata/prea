@@ -1,3 +1,4 @@
+import { PreaNode } from "./internal-type"
 
 
 type VNodeType<P={}> = string | FC<P> | null
@@ -21,6 +22,10 @@ export interface FC<P = {}> {
 }
 export interface Component<P = {}> {
     render(props:P): ComponentChildren
+    _hookStates?: any[]
+    _dirty: boolean
+    _vnode: VNode<P>
+    _parentDom?: PreaNode
 }
 export type ComponentChild = VNode | string | number | boolean | null | undefined
 export type ComponentChildren = ComponentChild[] | ComponentChild | null
@@ -63,9 +68,11 @@ export function createFragment(children: ComponentChildren):VNode<{children: Com
     return jsxFactory<{}>((props) => props.children, {}, ...arrayedChildren)
 }
 
-export function createComponent<P>(f: FC<P>):Component<P> {
+export function createComponent<P>(f: FC<P>, vnode:VNode<P>):Component<P> {
     return {
-        render(props){ return f(props)}
+        render(props){ return f(props)},
+        _dirty: false,
+        _vnode: vnode,
     }
 }
 

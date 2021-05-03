@@ -8,7 +8,19 @@ import {
     createVNode,
     isVNode
 } from './create-element'
+import { schedule } from './debounce'
 import {PreaNode} from './internal-type'
+
+type RenderEnterCB = (c:Component<any>) => void
+let renderEnterCBList: (RenderEnterCB[]) = []
+export function registerRenderEnterCB(cb: RenderEnterCB) {
+    renderEnterCBList.push(cb)
+}
+type RenderExitCB = (c:Component<any>) => void
+let renderExitCBList: (RenderExitCB[]) = []
+export function registerRenderExitCB(cb: RenderExitCB) {
+    renderExitCBList.push(cb)
+}
 
 function setStyle(
     style: CSSStyleDeclaration,
@@ -133,20 +145,23 @@ function renderDiffElementNodes(
             )
         }
     }
-    // TODO diffProps
-    const newChildren = newVNode.props.children
-    renderDiffChildren(
-        dom,
-        Array.isArray(newChildren) ? newChildren : [newChildren],
-        newVNode,
-        oldVNode,
-        excessDomChildren,
-    )
-    renderDiffProps(
-        dom,
-        newVNode.props,
-        oldVNode?.props,
-    )
+    if (newVNode.type === null) {
+        (dom as Text).data = newVNode.props
+    } else {
+        const newChildren = newVNode.props.children
+        renderDiffChildren(
+            dom,
+            Array.isArray(newChildren) ? newChildren : [newChildren],
+            newVNode,
+            oldVNode,
+            excessDomChildren,
+        )
+        renderDiffProps(
+            dom,
+            newVNode.props,
+            oldVNode?.props,
+        )
+    }
     return dom
 }
 
@@ -285,9 +300,14 @@ function renderDiff(
         if (oldVNode && oldVNode._component && oldVNode.type === newVNode.type) {
             component = newVNode._component = oldVNode._component
         } else {
-            component = newVNode._component = createComponent(newVNode.type)
+            component = newVNode._component = createComponent(newVNode.type, newVNode)
         }
+        renderEnterCBList.forEach((cb) => cb(component))
         const renderResult = component.render(newVNode.props)
+        component._vnode = newVNode
+        component._parentDom = parentDom
+        component._dirty = false
+        renderExitCBList.forEach((cb) => cb(component))
         renderDiffChildren(
             parentDom,
             Array.isArray(renderResult) ? renderResult : renderResult !== null ? [renderResult] : [],
@@ -305,7 +325,7 @@ function renderDiff(
     }
 }
 
-const render = (vnode:ComponentChildren , parentDom: PreaNode) => {
+export function render (vnode:ComponentChildren , parentDom: PreaNode)  {
     // TODO replaceDOM??
     const oldVNode = parentDom._children
     const newVNode = parentDom._children = createFragment(vnode) 
@@ -332,6 +352,37 @@ function unmount(vnode:VNode<any>) {
     }
 }
 
-export {
-    render
+let rerenderQueue: (Component[]) = []
+
+export function enqueueRender(c: Component) {
+    if (! c._dirty) {
+        c._dirty = true
+        rerenderQueue.push(c)
+        schedule(flushRenderQueue)
+    }
+}
+
+function flushRenderQueue() {
+    while (rerenderQueue.length !== 0) {
+        const queue = rerenderQueue.slice().sort((a, b) => a._vnode._depth - b._vnode._depth);
+        rerenderQueue = []
+        queue.forEach(c => {
+            renderComponent(c)
+        })
+    }
+}
+
+function renderComponent(c: Component) {
+    const vNode = c._vnode
+    const oldVNode = Object.assign({}, vNode)
+    const parentDom = c._parentDom
+    if (! parentDom) {
+        return
+    }
+    renderDiff(
+        parentDom,
+        vNode,
+        oldVNode,
+        []
+    )
 }
