@@ -88,7 +88,6 @@ const App = () => {
     const filteredTodos = todos.filter((todo) => (
         filter === "all" ? true : todo.state === filter
     ))
-    console.log(filter, todos, filteredTodos)
     const Radio = ({thisFilter,name}:{thisFilter: FilterState, name:string}) => (
         <label>
             <input
@@ -100,30 +99,26 @@ const App = () => {
             {name}
         </label>
     )
-    return (
+    return [
         <div>
-            <div>
-                <input
-                    placeholder="what needs to be done?"
-                    value={input}
-                    onInput={(e) => setInput(e.target.value)}
-                    onKeyDown={onKeyDown}/>
-                <button onClick={addTodo}>add</button>
-            </div>
-            <div>
-                <Radio thisFilter="all" name="all"/>
-                <Radio thisFilter="active" name="active only"/>
-                <Radio thisFilter="completed" name="completed only"/>
-            </div>
-            {
-                filteredTodos.map((todo) => (
-                    <TodoItemView
-                    todo={todo}
-                    onTodoStateChanged={(state) => changeState(todo.id, state)}
-                    onDeleted={() => deleteTodo(todo.id)}/>
-                ))
-            }
-        </div>
-    )
+            <input
+                placeholder="what needs to be done?"
+                value={input}
+                onInput={(e) => setInput(e.target.value)}
+                onKeyDown={onKeyDown}/>
+            <button onClick={addTodo}>add</button>
+        </div>,
+        <div>
+            <Radio thisFilter="all" name="all"/>
+            <Radio thisFilter="active" name="active only"/>
+            <Radio thisFilter="completed" name="completed only"/>
+        </div>,
+        filteredTodos.map((todo) => (
+            <TodoItemView
+            todo={todo}
+            onTodoStateChanged={(state) => changeState(todo.id, state)}
+            onDeleted={() => deleteTodo(todo.id)}/>
+        ))
+    ]
 }
 render(<App/>, root)
