@@ -1,5 +1,6 @@
 {
     "compilerOptions": {
+        "baseUrl": "./",
         "target": "es5",
         "lib": [
             "dom",
@@ -9,6 +10,9 @@
         "moduleResolution": "node",
         "jsx": "react",
         "jsxFactory": "h",
-        "strictNullChecks": true
+        "strictNullChecks": true,
+        "paths": {
+            "prea": ["./src/index"]
+        }
     }
 }
